@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	engine, _ := happyorm.NewEngine("sqlite3", "happy.db")
+	engine, _ := happyorm.NewEngine("sqlite3", "../happy.db")
 	defer engine.Close()
 	s := engine.NewSession()
 	s.Raw("DROP TABLE IF EXISTS User;").Exec()

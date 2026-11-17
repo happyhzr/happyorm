@@ -4,17 +4,21 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/happyhzr/happyorm/dialect"
 	"github.com/happyhzr/happyorm/log"
+	"github.com/happyhzr/happyorm/schema"
 )
 
 type Session struct {
-	db      *sql.DB
-	sql     strings.Builder
-	sqlVars []any
+	db       *sql.DB
+	dialect  dialect.Dialect
+	refTable *schema.Schema
+	sql      strings.Builder
+	sqlVars  []any
 }
 
-func New(db *sql.DB) *Session {
-	return &Session{db: db}
+func New(db *sql.DB, dialect dialect.Dialect) *Session {
+	return &Session{db: db, dialect: dialect}
 }
 
 func (s *Session) Clear() {
