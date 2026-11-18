@@ -1,7 +1,6 @@
 package session
 
 import (
-	"log"
 	"testing"
 )
 
@@ -12,10 +11,8 @@ type User struct {
 
 func TestSession_CreateTable(t *testing.T) {
 	s := NewSession().Model(&User{})
-	err := s.DropTable()
-	log.Println(err)
-	err = s.CreateTable()
-	log.Println(err)
+	s.DropTable()
+	s.CreateTable()
 	if !s.HasTable() {
 		t.Fatal("Failed to create table User")
 	}

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/happyhzr/happyorm/dialect"
-
 	_ "github.com/mattn/go-sqlite3"
 )
 

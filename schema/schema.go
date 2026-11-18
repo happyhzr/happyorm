@@ -25,6 +25,15 @@ func (s *Schema) GetField(name string) *Field {
 	return s.fieldMap[name]
 }
 
+func (s *Schema) RecordValues(dest any) []any {
+	destValue := reflect.Indirect(reflect.ValueOf(dest))
+	fieldValues := []any{}
+	for _, field := range s.Fields {
+		fieldValues = append(fieldValues, destValue.FieldByName(field.Name).Interface())
+	}
+	return fieldValues
+}
+
 func Parse(dest any, d dialect.Dialect) *Schema {
 	modelType := reflect.Indirect(reflect.ValueOf(dest)).Type()
 	schema := &Schema{Model: dest, Name: modelType.Name(), fieldMap: map[string]*Field{}}
