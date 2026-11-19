@@ -10,6 +10,7 @@ import (
 func (s *Session) Insert(values ...any) (int64, error) {
 	recordValues := []any{}
 	for _, value := range values {
+		s.CallMethod(BeforeInsert, value)
 		table := s.Model(value).RefTable()
 		s.clause.Set(clause.INSERT, table.Name, table.FieldNames)
 		recordValues = append(recordValues, table.RecordValues(value))
@@ -20,10 +21,12 @@ func (s *Session) Insert(values ...any) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	s.CallMethod(AfterInsert, nil)
 	return result.RowsAffected()
 }
 
 func (s *Session) Find(values any) error {
+	s.CallMethod(BeforeQuery, nil)
 	destSlice := reflect.Indirect(reflect.ValueOf(values))
 	elemType := destSlice.Type().Elem()
 	modelType := elemType
@@ -49,6 +52,7 @@ func (s *Session) Find(values any) error {
 		if err != nil {
 			return err
 		}
+		s.CallMethod(AfterQuery, record.Interface())
 		if pointerElements {
 			dest = record
 		}
@@ -58,6 +62,7 @@ func (s *Session) Find(values any) error {
 }
 
 func (s *Session) Update(kv ...any) (int64, error) {
+	s.CallMethod(BeforeUpdate, nil)
 	m, ok := kv[0].(map[string]any)
 	if !ok {
 		m = map[string]any{}
@@ -71,16 +76,19 @@ func (s *Session) Update(kv ...any) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	s.CallMethod(AfterUpdate, nil)
 	return result.RowsAffected()
 }
 
 func (s *Session) Delete() (int64, error) {
+	s.CallMethod(BeforeDelete, nil)
 	s.clause.Set(clause.DELETE, s.RefTable().Name)
 	sql, vars := s.clause.Build(clause.DELETE, clause.WHERE)
 	result, err := s.Raw(sql, vars...).Exec()
 	if err != nil {
 		return 0, err
 	}
+	s.CallMethod(AfterDelete, nil)
 	return result.RowsAffected()
 }
 
