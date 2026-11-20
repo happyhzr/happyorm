@@ -50,6 +50,7 @@ func (s *Session) Exec() (sql.Result, error) {
 	result, err := s.DB().Exec(s.sql.String(), s.sqlVars...)
 	if err != nil {
 		log.Error(err)
+		return nil, err
 	}
 	return result, nil
 }

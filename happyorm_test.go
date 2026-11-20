@@ -2,6 +2,7 @@ package happyorm
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/happyhzr/happyorm/session"
@@ -60,5 +61,20 @@ func transactionCommit(t *testing.T) {
 	s.First(u)
 	if err != nil || u.Name != "Tom" {
 		t.Fatal("failed to commit")
+	}
+}
+
+func TestEngine_Migrate(t *testing.T) {
+	engine := OpenDB(t)
+	defer engine.Close()
+	s := engine.NewSession()
+	s.Raw("DROP TABLE IF EXISTS User;").Exec()
+	s.Raw("CREATE TABLE User (Name text PRIMARY KEY, XXX integer);").Exec()
+	s.Raw("INSERT INTO User (Name) VALUES (?), (?)", "Tom", "Sam").Exec()
+	engine.Migrate(&User{})
+	rows, _ := s.Raw("SELECT * FROM User").QueryRows()
+	columns, _ := rows.Columns()
+	if !reflect.DeepEqual(columns, []string{"Name", "Age"}) {
+		t.Fatal("failed to migrate table User, got columns", columns)
 	}
 }
