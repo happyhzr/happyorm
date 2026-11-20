@@ -13,6 +13,7 @@ import (
 type Session struct {
 	db       *sql.DB
 	dialect  dialect.Dialect
+	tx       *sql.Tx
 	refTable *schema.Schema
 	clause   *clause.Clause
 	sql      *strings.Builder
@@ -29,7 +30,10 @@ func (s *Session) Clear() {
 	s.clause = &clause.Clause{}
 }
 
-func (s *Session) DB() *sql.DB {
+func (s *Session) DB() CommonDB {
+	if s.tx != nil {
+		return s.tx
+	}
 	return s.db
 }
 
@@ -65,3 +69,12 @@ func (s *Session) QueryRows() (*sql.Rows, error) {
 	}
 	return rows, nil
 }
+
+type CommonDB interface {
+	Query(query string, args ...any) (*sql.Rows, error)
+	QueryRow(query string, args ...any) *sql.Row
+	Exec(query string, args ...any) (sql.Result, error)
+}
+
+var _ CommonDB = (*sql.DB)(nil)
+var _ CommonDB = (*sql.Tx)(nil)

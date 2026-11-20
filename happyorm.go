@@ -9,6 +9,8 @@ import (
 	"github.com/happyhzr/happyorm/session"
 )
 
+type TxFunc func(*session.Session) (any, error)
+
 type Engine struct {
 	db      *sql.DB
 	dialect dialect.Dialect
@@ -46,4 +48,24 @@ func (e *Engine) Close() {
 
 func (e *Engine) NewSession() *session.Session {
 	return session.New(e.db, e.dialect)
+}
+
+func (e *Engine) Transaction(f TxFunc) (result any, err error) {
+	s := e.NewSession()
+	errBegin := s.Begin()
+	if errBegin != nil {
+		return nil, errBegin
+	}
+	defer func() {
+		r := recover()
+		if r != nil {
+			s.Rollback()
+			panic(r)
+		} else if err != nil {
+			s.Rollback()
+		} else {
+			err = s.Commit()
+		}
+	}()
+	return f(s)
 }
